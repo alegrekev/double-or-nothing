@@ -11,9 +11,50 @@ export default function GamePage() {
 
     return (
         <div className="font-mono text-[rgb(147_129_255)]">
-            <div className="m-auto mt-10 w-200 flex items-center justify-center text-4xl font-bold">
-                🎓 UNIVERSITY SIMULATOR 🎓
+            <div className="m-auto mt-10 flex justify-center">
+                <div className="
+        relative
+        px-12 py-4
+        text-2xl sm:text-3xl md:text-4xl
+        font-bold tracking-wide
+        rounded-full
+        bg-white/25
+        backdrop-blur-xl
+        border border-white/40
+        shadow-[0_8px_32px_rgba(0,0,0,0.25)]
+        text-[rgb(147_129_255)]
+        overflow-hidden
+    ">
+                    {/* liquid highlight */}
+                    <div className="
+            absolute inset-0
+            bg-gradient-to-br from-white/60 via-white/10 to-transparent
+            opacity-70
+            pointer-events-none
+        " />
+
+                    {/* moving sheen */}
+                    <div className="
+            absolute -left-1/2 top-0 h-full w-[200%]
+            bg-gradient-to-r from-transparent via-white/40 to-transparent
+            opacity-30
+            animate-[sheen_6s_linear_infinite]
+            pointer-events-none
+        " />
+
+                    <span className="
+    relative z-10
+    text-black/70
+    drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]
+">
+                        🎓 UNIVERSITY SIMULATOR 🎓
+                    </span>
+
+                </div>
             </div>
+
+
+
             <Question />
             <div className="fixed top-10 right-10">
                 <div className="flex" onClick={spinAll}>
