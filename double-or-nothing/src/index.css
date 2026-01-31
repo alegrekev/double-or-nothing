@@ -37,7 +37,7 @@ body::before {
 }
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Fredoka', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -59,4 +59,9 @@ body::before {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  font-family: 'Fredoka', system-ui, sans-serif;
 }

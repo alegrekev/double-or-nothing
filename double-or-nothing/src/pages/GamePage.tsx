@@ -56,16 +56,49 @@ export default function GamePage() {
 
 
             <Question />
-            <div className="fixed top-10 right-10">
-                <div className="flex" onClick={spinAll}>
-                    <SlotReel spinTrigger={spinCount} />
-                    <SlotReel spinTrigger={spinCount} />
-                    <SlotReel spinTrigger={spinCount} />
+            <div className="fixed bottom-10 left-1/2 -translate-x-1/2">
+                <div
+                    className="
+            relative
+            px-6 py-3
+            rounded-full
+            bg-white/20
+            backdrop-blur-xl
+            border border-white/40
+            shadow-[0_8px_24px_rgba(0,0,0,0.22)]
+            overflow-hidden
+        "
+                >
+                    {/* liquid highlight */}
+                    <div className="
+            absolute inset-0
+            bg-gradient-to-br from-white/60 via-white/10 to-transparent
+            opacity-70
+            pointer-events-none
+        " />
+
+                    {/* subtle sheen (slower + lighter than title) */}
+                    <div className="
+            absolute -left-1/2 top-0 h-full w-[200%]
+            bg-gradient-to-r from-transparent via-white/40 to-transparent
+            opacity-20
+            animate-[sheen_10s_linear_infinite]
+            pointer-events-none
+        " />
+
+                    <span className="
+            relative z-10
+            text-sm sm:text-base
+            font-semibold
+            text-black/70
+            drop-shadow-[0_1px_1px_rgba(255,255,255,0.35)]
+            tracking-wide
+        ">
+                        Question 1/40
+                    </span>
                 </div>
             </div>
-            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 items-center justify-center text-xl font-bold">
-                Question 1/40
-            </div>
+
         </div>
     )
 }
