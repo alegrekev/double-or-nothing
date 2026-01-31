@@ -44,7 +44,7 @@ class QuestionResponse(BaseModel):
     major: Optional[str] = None
     answers: List[AnswerData]
     question_number: int
-    total_questions: int = 40
+    total_questions: int = 20
     game_over: bool = False
     game_over_message: Optional[str] = None
 
