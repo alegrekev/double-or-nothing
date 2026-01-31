@@ -156,6 +156,7 @@ Always respond with valid JSON in this exact structure:
 {
   "question": "The situation/scenario the student faces",
   "year": "Year 1" | "Year 2" | "Year 3" | "Year 4",
+  "summary": "A 2-3 sentence summary of this question and its context in the student's journey",
   "answers": [
     {
       "id": "A1",
@@ -177,6 +178,14 @@ Always respond with valid JSON in this exact structure:
     }
   ]
 }
+
+## SUMMARY FIELD REQUIREMENTS
+The "summary" field should:
+- Be 2-3 sentences describing this scenario's significance
+- Capture the key decision point and its implications
+- Reflect the student's current situation (stats, major, year)
+- Be concise but informative for tracking the narrative arc
+- Example: "After struggling academically last semester, you face a critical decision about your Computer Science project. Your low morale and health are taking a toll, but this project could turn things around."
 
 ## CRITICAL JSON FORMATTING RULES
 - Effect values MUST be integers without the plus sign: use 30, not +30
@@ -243,7 +252,7 @@ Generate engaging, realistic scenarios that make the player feel the weight of t
     
     def __init__(self, api_key: str):
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        self.model = genai.GenerativeModel('gemini-2.5-flash-lite')
         self.stats = Stats()
         self.decisions: List[Decision] = []
         self.events: List[GameEvent] = []
@@ -254,17 +263,19 @@ Generate engaging, realistic scenarios that make the player feel the weight of t
         self.major: Optional[str] = None
         self.offered_majors: List[str] = []
         self.current_question: Optional[Dict] = None  # Store current question for API
+        self.long_term_summary: str = ""  # Cumulative summary of past decisions
+        self.question_summaries: List[str] = []  # Store all question summaries
         
     def get_year_label(self) -> str:
         """Convert question count to year label"""
         years = {1: "Year 1", 2: "Year 2", 3: "Year 3", 4: "Year 4"}
         # Roughly 10 questions per year for a 40-question game
-        year_num = min(4, (self.question_count // 10) + 1)
+        year_num = min(4, (self.question_count // 5) + 1)
         return years[year_num]
     
     def is_past_first_year(self) -> bool:
         """Check if player is past first year (question 11+)"""
-        return self.question_count >= 10
+        return self.question_count >= 5
     
     def generate_major_selection_question(self) -> Dict:
         """Generate the first question to select a major"""
@@ -322,6 +333,10 @@ Current Game State:
 - Average Stats: {self.stats.get_average():.1f}
 - Questions Answered: {self.question_count}
 """
+        
+        # Add long-term summary if it exists
+        if self.long_term_summary:
+            context += f"\nLong-term Journey Summary:\n{self.long_term_summary}\n"
         
         # Add stat warnings
         stat_warnings = []
@@ -387,6 +402,25 @@ Current Game State:
             
             question_data = json.loads(response_text)
             self.question_count += 1
+            
+            # Store the summary from this question
+            current_summary = question_data.get('summary', '')
+            if current_summary:
+                self.question_summaries.append(current_summary)
+            
+            # Update long-term summary using 3rd most recent
+            # When we have 3+ summaries, compound the 3rd most recent into long-term
+            if len(self.question_summaries) >= 3:
+                # Get the 3rd most recent summary (index -3)
+                third_most_recent = self.question_summaries[-3]
+                
+                # Compound it into long-term summary
+                if self.long_term_summary:
+                    # Add to existing summary
+                    self.long_term_summary = f"{self.long_term_summary} {third_most_recent}"
+                else:
+                    # First time: start with the 3rd summary
+                    self.long_term_summary = third_most_recent
             
             return question_data
             
@@ -580,7 +614,7 @@ Current Game State:
     
     def check_graduation(self) -> bool:
         """Check if player has completed enough questions to graduate"""
-        return self.question_count >= 40  # 4 years * ~10 questions per year
+        return self.question_count >= 20  # 4 years * ~10 questions per year
     
     def display_ending(self):
         """Display graduation message based on final stats"""

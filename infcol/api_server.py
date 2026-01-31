@@ -99,7 +99,7 @@ async def get_question(game_id: str):
             major=simulator.major,
             answers=clean_answers,
             question_number=simulator.question_count,
-            total_questions=40,
+            total_questions=20,
             game_over=False
         )
         
