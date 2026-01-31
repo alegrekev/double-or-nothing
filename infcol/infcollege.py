@@ -253,6 +253,7 @@ Generate engaging, realistic scenarios that make the player feel the weight of t
         self.warning_avg = 0.0
         self.major: Optional[str] = None
         self.offered_majors: List[str] = []
+        self.current_question: Optional[Dict] = None  # Store current question for API
         
     def get_year_label(self) -> str:
         """Convert question count to year label"""

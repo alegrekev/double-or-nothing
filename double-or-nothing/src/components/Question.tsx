@@ -1,6 +1,13 @@
 import Answer from "./Answer";
 
-export default function Question() {
+interface QuestionProps {
+    questionText: string;
+    answers: Array<{ id: string; text: string }>;
+    onAnswerClick: (answerId: string) => void;
+    disabled?: boolean;
+}
+
+export default function Question({ questionText, answers, onAnswerClick, disabled = false }: QuestionProps) {
     return (
         <div className="m-auto mt-24 flex w-[70rem] justify-center">
             <div
@@ -36,17 +43,22 @@ export default function Question() {
                 {/* content */}
                 <div className="relative z-10">
                     <div className="
-    mb-8 text-center text-lg 
-    text-black/70
-    drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]
-">
-                        The prestigious fellowship has officially begun, and your intense preparation during the transition period has paid off immensely. You've smoothly integrated into your team, and your mentors have already expressed appreciation for your initiative. However, the environment is highly competitive, and the workload is demanding.
+                        mb-8 text-center text-lg 
+                        text-black/70
+                        drop-shadow-[0_1px_1px_rgba(255,255,255,0.4)]
+                    ">
+                        {questionText}
                     </div>
 
-
                     <div className="flex justify-center gap-8">
-                        <Answer />
-                        <Answer />
+                        {answers.map((answer) => (
+                            <Answer
+                                key={answer.id}
+                                text={answer.text}
+                                onClick={() => onAnswerClick(answer.id)}
+                                disabled={disabled}
+                            />
+                        ))}
                     </div>
                 </div>
             </div>
