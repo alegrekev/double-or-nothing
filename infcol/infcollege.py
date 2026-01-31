@@ -1,4 +1,4 @@
-# college_simulator_backend.py
+# infcollege.py
 
 import os
 import json
@@ -8,6 +8,80 @@ import google.generativeai as genai
 from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict
 import keyenv
+
+# College Majors List
+COLLEGE_MAJORS = [
+    "Accounting and Information Systems",
+    "Aerospace Engineering",
+    "Agricultural and Applied Economics",
+    "Agricultural Sciences",
+    "Agricultural Technology",
+    "Animal and Poultry Sciences",
+    "Apparel, Housing, and Resource Management",
+    "Architecture",
+    "Biochemistry",
+    "Biological Sciences",
+    "Biological Systems Engineering",
+    "Biomedical Engineering",
+    "Biomedical Sciences",
+    "Building Construction",
+    "Business Information Technology",
+    "Chemical Engineering",
+    "Chemistry",
+    "Civil Engineering",
+    "Communication",
+    "Computer Engineering",
+    "Computer Science",
+    "Construction Engineering and Management",
+    "Creative Technologies",
+    "Crop and Soil Environmental Sciences",
+    "Criminology",
+    "Cybersecurity",
+    "Dairy Science",
+    "Economics",
+    "Electrical Engineering",
+    "Engineering Science and Mechanics",
+    "English",
+    "Environmental Conservation and Society",
+    "Environmental Policy and Planning",
+    "Environmental Resources Management",
+    "Finance",
+    "Fish and Wildlife Conservation",
+    "Food Science and Technology",
+    "Forest Resource Management",
+    "Geography",
+    "Geology",
+    "History",
+    "Horticulture",
+    "Human Development and Family Science",
+    "Human Nutrition, Foods, and Exercise",
+    "Industrial and Systems Engineering",
+    "Interior Design",
+    "International Studies",
+    "Landscape Architecture",
+    "Management",
+    "Marketing Management",
+    "Materials Science and Engineering",
+    "Mathematics",
+    "Mechanical Engineering",
+    "Mining Engineering",
+    "Multimedia Journalism",
+    "Music",
+    "Nanoscience",
+    "Natural Resources Conservation",
+    "Ocean Engineering",
+    "Philosophy",
+    "Physics",
+    "Political Science",
+    "Professional and Technical Writing",
+    "Psychology",
+    "Public and Urban Affairs",
+    "Religion and Culture",
+    "Sociology",
+    "Statistics",
+    "Theatre Arts",
+    "Wildlife Conservation"
+]
 
 @dataclass
 class Stats:
@@ -52,15 +126,16 @@ class CollegeSimulator:
 Generate college life questions/situations with two choice options. Each choice affects three stats: Morale (Mental Health), Academics (Academic Success), and Health (Physical Health). Stats range from 0-100.
 
 ## Guidelines
-1. **Narrative Continuity**: Base questions on the student's past decisions and current stats (except the first question)
-2. **Realistic Scenarios**: Create situations that college students actually face
-3. **VARIED CHOICES - IMPORTANT**: 
+1. **Narrative Continuity**: Base questions on the student's past decisions, current stats, AND their chosen major
+2. **Major-Specific Content**: Incorporate the student's major into scenarios (major-specific classes, labs, projects, career opportunities, internships, etc.)
+3. **Realistic Scenarios**: Create situations that college students actually face, with major-specific flavor
+4. **VARIED CHOICES - IMPORTANT**: 
    - NOT all choices should be balanced trade-offs
    - Sometimes one choice is clearly better or worse (but still tempting for different reasons)
    - Sometimes both choices are bad (choosing the lesser evil)
    - Sometimes both choices are good (choosing priorities)
    - Mix obviously good decisions, obviously bad decisions, and difficult trade-offs
-4. **Stat Effects - IMPORTANT VARIETY RULES**: 
+5. **Stat Effects - IMPORTANT VARIETY RULES**: 
    - Use values between -40 to +40 for impacts (occasionally go to extremes like -50 or +50 for major events)
    - **DO NOT always affect all three stats** - many choices should only affect 1 or 2 stats
    - Use null liberally when a choice doesn't impact a particular stat
@@ -70,11 +145,11 @@ Generate college life questions/situations with two choice options. Each choice 
      * Choice B: morale -20, academics +40, health -30 (grueling all-nighter studying)
      * Choice A: morale +10, academics null, health +15 (light exercise)
      * Choice B: morale -40, academics -30, health -25 (destructive spiral)
-5. **Tempting Bad Choices**: Make clearly negative options still feel tempting in the moment (procrastination, unhealthy coping, avoiding responsibility)
-6. **Progression**: Questions should reflect the student's year (freshman, sophomore, junior, senior) and previous choices
-7. **Variety**: Mix academic, social, health, financial, and personal scenarios
-8. **Major Events**: If the student has experienced major setbacks (academic suspension, medical leave, mental health crisis), incorporate these into the narrative naturally
-9. **Consequence Realism**: Poor choices should have significant negative impacts. Good choices should meaningfully help. The player should be able to spiral down OR climb up based on their decisions.
+6. **Tempting Bad Choices**: Make clearly negative options still feel tempting in the moment (procrastination, unhealthy coping, avoiding responsibility)
+7. **Progression**: Questions should reflect the student's year (freshman, sophomore, junior, senior) and previous choices
+8. **Variety**: Mix academic, social, health, financial, and personal scenarios - but tie them to the student's major when relevant
+9. **Major Events**: If the student has experienced major setbacks (academic suspension, medical leave, mental health crisis), incorporate these into the narrative naturally
+10. **Consequence Realism**: Poor choices should have significant negative impacts. Good choices should meaningfully help. The player should be able to spiral down OR climb up based on their decisions.
 
 ## Response Format
 Always respond with valid JSON in this exact structure:
@@ -137,15 +212,27 @@ Question: "The campus rec center is offering free yoga classes."
 A1: "Sign up and attend regularly" → morale: null, academics: null, health: +25
 A2: "Skip it - you're too busy" → morale: null, academics: null, health: null
 
+**Example 6: Major-Specific Scenario (Computer Science)**
+Question: "Your CS project partner hasn't contributed anything with 48 hours until the deadline."
+A1: "Do their part yourself to ensure a good grade" → morale: -30, academics: +20, health: -25
+A2: "Report them to the TA and risk the deadline" → morale: -10, academics: -15, health: null
+
+**Example 7: Major-Specific Scenario (Mechanical Engineering)**
+Question: "You have the opportunity to join the Formula SAE racing team, but it's a huge time commitment during your toughest semester."
+A1: "Join the team - hands-on experience is invaluable" → morale: +25, academics: -20, health: -15
+A2: "Focus on grades this semester, maybe next year" → morale: -10, academics: +15, health: null
+
 ## Context Awareness
-When provided with game state (current stats, past decisions, current year, major events), tailor the question to reflect:
+When provided with game state (current stats, past decisions, current year, major, major events), tailor the question to reflect:
 - Consequences of previous choices
+- Major-specific challenges (difficult classes, labs, projects typical for that major)
+- Major-specific opportunities (clubs, internships, research related to the major)
 - Current stat levels (low health might lead to illness scenarios, low academics to academic probation, etc.)
 - Major events that have occurred (academic suspension, medical leave, mental health crisis)
 - Recovery opportunities if stats are dangerously low
 - Downward spiral opportunities if player keeps making bad choices
-- Time in college (early years vs. senior year priorities)
-- Building a coherent story arc
+- Time in college (early years vs. senior year priorities, intro classes vs. capstone projects)
+- Building a coherent story arc that reflects the journey through their specific major
 
 Generate engaging, realistic scenarios that make the player feel the weight of their decisions throughout their college journey. Don't be afraid to punish bad decisions harshly or reward good decisions well."""
     
@@ -164,6 +251,8 @@ Generate engaging, realistic scenarios that make the player feel the weight of t
         self.current_year = 1
         self.dropout_warning_active = False
         self.warning_avg = 0.0
+        self.major: Optional[str] = None
+        self.offered_majors: List[str] = []
         
     def get_year_label(self) -> str:
         """Convert question count to year label"""
@@ -176,14 +265,58 @@ Generate engaging, realistic scenarios that make the player feel the weight of t
         """Check if player is past first year (question 11+)"""
         return self.question_count >= 10
     
+    def generate_major_selection_question(self) -> Dict:
+        """Generate the first question to select a major"""
+        # Select two random majors
+        self.offered_majors = random.sample(COLLEGE_MAJORS, 2)
+        
+        question_data = {
+            "question": f"Welcome to college! It's time to declare your major. You've narrowed it down to two fields that interest you. Which path will you choose?",
+            "year": "Year 1",
+            "answers": [
+                {
+                    "id": "A1",
+                    "text": f"Declare {self.offered_majors[0]} as your major",
+                    "effects": {
+                        "morale": 15,
+                        "academics": None,
+                        "health": None
+                    }
+                },
+                {
+                    "id": "A2",
+                    "text": f"Declare {self.offered_majors[1]} as your major",
+                    "effects": {
+                        "morale": 15,
+                        "academics": None,
+                        "health": None
+                    }
+                }
+            ]
+        }
+        
+        self.question_count += 1
+        return question_data
+    
+    def set_major_from_choice(self, choice_id: str):
+        """Set the student's major based on their choice"""
+        if choice_id == "A1":
+            self.major = self.offered_majors[0]
+        else:
+            self.major = self.offered_majors[1]
+        
+        print(f"\n🎓 You've declared {self.major} as your major!")
+    
     def build_context_prompt(self) -> str:
         """Build context from previous decisions and current stats"""
-        if not self.decisions:
+        if not self.major:
+            # This shouldn't happen after the first question
             return "This is the first question. The student is just starting their college journey as a freshman."
         
         context = f"""
 Current Game State:
 - Year: {self.get_year_label()}
+- Major: {self.major}
 - Current Stats: Morale: {self.stats.morale}, Academics: {self.stats.academics}, Health: {self.stats.health}
 - Average Stats: {self.stats.get_average():.1f}
 - Questions Answered: {self.question_count}
@@ -218,7 +351,7 @@ Current Game State:
         for decision in self.decisions[-3:]:
             context += f"- Q{decision.question_num}: {decision.question}\n  Choice: {decision.choice}\n"
         
-        context += "\nGenerate the next question that follows naturally from these past decisions, current stats, and major events. Remember to vary your choice structures - not every choice should be a balanced trade-off!"
+        context += f"\nGenerate the next question that follows naturally from these past decisions, current stats, major events, and the student's major ({self.major}). Remember to vary your choice structures - not every choice should be a balanced trade-off! Incorporate major-specific content when appropriate."
         return context
     
     def clean_json_response(self, response_text: str) -> str:
@@ -237,6 +370,10 @@ Current Game State:
     
     def generate_question(self) -> Dict:
         """Request Gemini to generate a new question"""
+        # First question is always major selection
+        if self.question_count == 0:
+            return self.generate_major_selection_question()
+        
         context = self.build_context_prompt()
         
         prompt = f"{self.SYSTEM_PROMPT}\n\n{context}\n\nRespond ONLY with the JSON object, no additional text."
@@ -267,6 +404,10 @@ Current Game State:
         
         if not choice:
             raise ValueError(f"Invalid choice ID: {choice_id}")
+        
+        # If this is the first question, set the major
+        if self.question_count == 1:
+            self.set_major_from_choice(choice_id)
         
         # Record the decision
         decision = Decision(
@@ -392,6 +533,8 @@ Current Game State:
         """Display question in terminal"""
         print("\n" + "="*60)
         print(f"YEAR: {question_data.get('year', self.get_year_label())}")
+        if self.major:
+            print(f"MAJOR: {self.major}")
         print(f"Question #{self.question_count}")
         print("="*60)
         print(f"\n{question_data['question']}\n")
@@ -443,6 +586,7 @@ Current Game State:
         print("\n" + "="*60)
         print("🎓 CONGRATULATIONS! YOU'VE GRADUATED! 🎓")
         print("="*60)
+        print(f"\nYou've earned your degree in {self.major}!")
         
         avg_stat = self.stats.get_average()
         
@@ -475,7 +619,7 @@ Current Game State:
         print("\n" + "="*60)
         print("📚 COLLEGE JOURNEY ENDED - DROPOUT")
         print("="*60)
-        print(f"\nAfter {self.question_count} questions into your college experience,")
+        print(f"\nAfter {self.question_count} questions into your {self.major} degree,")
         print("the weight of your struggles became too much to bear.")
         print("Your decisions led to a downward spiral that you couldn't recover from.")
         print("\nThis isn't the end of your story - it's a tough lesson.")
@@ -504,13 +648,15 @@ def main():
     print("="*60)
     print("\nNavigate your way through college by making choices that")
     print("affect your Mental Health, Academic Success, and Physical Health.")
+    print("\nYou'll start by choosing your major, which will influence")
+    print("the scenarios you face throughout your college journey.")
     print("\nTry to maintain balance and make it to graduation!")
     print("\n⚠️  Warning: Poor choices have REAL consequences!")
     print("If your overall performance drops too low after your first year,")
     print("you may drop out!")
     print("\nPress Ctrl+C at any time to quit.\n")
     
-    input("Press Enter to start your freshman year...")
+    input("Press Enter to start your college journey...")
     
     simulator = CollegeSimulator(api_key)
     
@@ -525,7 +671,8 @@ def main():
             
             # Display question
             simulator.display_question(question_data)
-            simulator.display_stats()
+            if simulator.question_count > 1:  # Don't show stats for major selection
+                simulator.display_stats()
             
             # Get user choice
             while True:
@@ -538,20 +685,22 @@ def main():
             # Apply choice
             simulator.apply_choice(question_data, choice_id)
             
-            # Check for crisis events (non-terminal)
-            crisis_events = simulator.check_stat_crisis_events()
-            if crisis_events:
-                simulator.display_events(crisis_events)
-            
-            # Check for dropout warning (only after first year)
-            if simulator.is_past_first_year():
-                simulator.check_dropout_warning()
+            # Skip crisis checks for major selection question
+            if simulator.question_count > 1:
+                # Check for crisis events (non-terminal)
+                crisis_events = simulator.check_stat_crisis_events()
+                if crisis_events:
+                    simulator.display_events(crisis_events)
                 
-                # Check if dropout warning resolves
-                dropout_result = simulator.check_dropout_resolution()
-                if dropout_result == 'dropout':
-                    simulator.display_dropout_ending()
-                    break
+                # Check for dropout warning (only after first year)
+                if simulator.is_past_first_year():
+                    simulator.check_dropout_warning()
+                    
+                    # Check if dropout warning resolves
+                    dropout_result = simulator.check_dropout_resolution()
+                    if dropout_result == 'dropout':
+                        simulator.display_dropout_ending()
+                        break
             
             # Check graduation
             if simulator.check_graduation():
@@ -560,6 +709,8 @@ def main():
             
     except KeyboardInterrupt:
         print("\n\nGame interrupted. Thanks for playing!")
+        if simulator.major:
+            print(f"Major: {simulator.major}")
         simulator.display_stats()
     except Exception as e:
         print(f"\nAn error occurred: {e}")
