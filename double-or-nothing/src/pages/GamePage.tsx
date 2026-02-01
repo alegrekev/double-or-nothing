@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import Question from "../components/Question";
+import HomePage from "../components/HomePage";
+import SlotReel from "../components/SlotReel";
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -20,15 +22,18 @@ interface QuestionData {
 }
 
 export default function GamePage() {
+    const [gameStarted, setGameStarted] = useState(false);
     const [gameId, setGameId] = useState<string | null>(null);
     const [questionData, setQuestionData] = useState<QuestionData | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showSlotReel, setShowSlotReel] = useState(false);
+    const [spinTrigger, setSpinTrigger] = useState(0);
 
-    // Initialize game on mount
-    useEffect(() => {
-        initializeGame();
-    }, []);
+    const handleStartGame = async () => {
+        setGameStarted(true);
+        await initializeGame();
+    };
 
     const initializeGame = async () => {
         setLoading(true);
@@ -106,11 +111,23 @@ export default function GamePage() {
     };
 
     const handleRestart = () => {
+        setGameStarted(false);
         setGameId(null);
         setQuestionData(null);
         setError(null);
-        initializeGame();
+        setShowSlotReel(false);
     };
+
+    const toggleSlotReel = () => {
+        setShowSlotReel(!showSlotReel);
+        if (!showSlotReel) {
+            setSpinTrigger(prev => prev + 1);
+        }
+    };
+
+    if (!gameStarted) {
+        return <HomePage onStart={handleStartGame} />;
+    }
 
     if (error) {
         return (
@@ -177,7 +194,7 @@ export default function GamePage() {
 
     return (
         <div className="font-mono text-[rgb(147_129_255)]">
-            <div className="m-auto mt-10 flex justify-center">
+            <div className="m-auto mt-10 flex justify-center items-center relative">
                 <div className="
                     relative
                     px-12 py-4
@@ -213,9 +230,22 @@ export default function GamePage() {
                         text-black/70
                         drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]
                     ">
-                        🎓 COLLEGE SIMULATOR 🎓
+                        🎓 COLLEGE SIMULATOR{" "}
+                        <span 
+                            onClick={toggleSlotReel}
+                            className="cursor-pointer hover:scale-110 inline-block transition-transform"
+                        >
+                            🎓
+                        </span>
                     </span>
                 </div>
+
+                {/* SlotReel positioned absolutely to the right */}
+                {showSlotReel && (
+                    <div className="absolute right-0 top-0 ml-4">
+                        <SlotReel spinTrigger={spinTrigger} />
+                    </div>
+                )}
             </div>
 
             <Question
