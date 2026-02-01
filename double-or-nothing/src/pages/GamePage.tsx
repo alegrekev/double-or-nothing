@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Question from "../components/Question";
+import HomePage from "../components/HomePage";
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -20,15 +21,16 @@ interface QuestionData {
 }
 
 export default function GamePage() {
+    const [gameStarted, setGameStarted] = useState(false);
     const [gameId, setGameId] = useState<string | null>(null);
     const [questionData, setQuestionData] = useState<QuestionData | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Initialize game on mount
-    useEffect(() => {
-        initializeGame();
-    }, []);
+    const handleStartGame = async () => {
+        setGameStarted(true);
+        await initializeGame();
+    };
 
     const initializeGame = async () => {
         setLoading(true);
@@ -106,11 +108,16 @@ export default function GamePage() {
     };
 
     const handleRestart = () => {
+        setGameStarted(false);
         setGameId(null);
         setQuestionData(null);
         setError(null);
-        initializeGame();
     };
+
+    // Show HomePage if game hasn't started
+    if (!gameStarted) {
+        return <HomePage onStart={handleStartGame} />;
+    }
 
     if (error) {
         return (

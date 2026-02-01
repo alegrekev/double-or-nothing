@@ -213,6 +213,7 @@ When provided with game state (current stats, past decisions, current year, majo
 - Major events that have occurred (academic suspension, medical leave, mental health crisis)
 - Recovery opportunities if stats are dangerously low
 - Downward spiral opportunities if player keeps making bad choices
+- Become more chaotic if player continues to spiral
 - Time in college (early years vs. senior year priorities, intro classes vs. capstone projects)
 - Building a coherent story arc that reflects the journey through their specific major
 
