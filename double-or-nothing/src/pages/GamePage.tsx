@@ -225,7 +225,7 @@ export default function GamePage() {
                 disabled={loading}
             />
 
-            <div className="fixed bottom-10 left-1/2 -translate-x-1/2">
+            <div className="w-45 text-center mt-10 m-auto mb-5">
                 <div
                     className="
                         relative

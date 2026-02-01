@@ -225,7 +225,7 @@ Generate engaging, realistic scenarios that make the player feel the weight of t
     
     def __init__(self, api_key: str):
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash-lite')
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
         self.stats = Stats()
         self.decisions: List[Decision] = []
         self.events: List[GameEvent] = []
