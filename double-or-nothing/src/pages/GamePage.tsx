@@ -213,7 +213,7 @@ export default function GamePage() {
                         text-black/70
                         drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]
                     ">
-                        🎓 UNIVERSITY SIMULATOR 🎓
+                        🎓 COLLEGE SIMULATOR 🎓
                     </span>
                 </div>
             </div>
